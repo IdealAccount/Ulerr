@@ -117,12 +117,12 @@
     watch: {
       cardNumber() {
         this.isValid = null;
-        if (this.cardNumber.length > 16) this.cardNumber = this.cardNumber.slice(0,16);
+        if (this.cardNumber.length > 16) this.cardNumber = this.cardNumber.slice(0, 16);
         if (this.cardNumber.length === 16) this.isValid = true;
       },
       confirmCode() {
         this.isConfirm = null;
-        if (this.confirmCode.length > 4) this.confirmCode = this.confirmCode.slice(0,4);
+        if (this.confirmCode.length > 4) this.confirmCode = this.confirmCode.slice(0, 4);
         if (this.confirmCode.length === 4 && +this.confirmCode !== this.randNum) {
           this.validateShow = true;
           return this.isConfirm = false;
@@ -175,16 +175,12 @@
           })
           .catch(error => console.log(error));
 
-        try {
-          this.addCard(this.cardProps);
-          this.cardName = null;
-          this.cardNumber = null;
-          this.confirmCode = null;
+        this.addCard(this.cardProps);
+        this.cardName = null;
+        this.cardNumber = null;
+        this.confirmCode = null;
 
-          this.$parent.$parent.$data.isShow = false;
-        } catch (e) {
-          alert('Вы пытались создать существующую карту')
-        }
+        this.$parent.$parent.$data.isShow = false;
       },
     }
   }
