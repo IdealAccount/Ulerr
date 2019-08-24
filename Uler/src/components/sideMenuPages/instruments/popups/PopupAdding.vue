@@ -18,16 +18,16 @@
       <div :class="['popup__input-wrapper',
                    isValid ? 'valid' :
                    isValid === false ? 'not-valid' :
-                   isValid === null ? '' : '']"
-           :style="(cardFocus && isValid === null) ? focusStyle : ''"
+                   (isValid === null) ? '' : '']"
+           :style="isValid === null && cardFocus ? focusStyle : ''"
       >
         <input
           class="popup__input"
           id="card-num"
           v-model="cardNumber"
-          @blur="[validCardNum, cardFocus = false]"
           @focus="cardFocus = true"
-          type="text"
+          @blur="validCardNum"
+          type="number"
           placeholder="Введите номер"
           required
         >
@@ -38,14 +38,14 @@
       <div :class="['popup__input-wrapper',
                    isConfirm === true ? 'valid' :
                    isConfirm === false ? 'not-valid' :
-                   isConfirm === null ? '' : '']"
-           :style="codeFocus && isConfirm === null ? focusStyle : ''"
+                   (isConfirm === null) ? '' : '']"
+           :style="isConfirm === null && codeFocus ? focusStyle : ''"
       >
         <input id="card-confirm"
                class="popup__input"
                v-model="confirmCode"
-               @blur="[cardConfirm, codeFocus = false]"
                @focus="codeFocus = true"
+               @blur="cardConfirm"
                placeholder="Введите код"
                type="number"
                required
@@ -69,6 +69,7 @@
     components: {
       Validate
     },
+    props: ['show'],
     directives: {
       focus: {
         inserted(el) {
@@ -76,20 +77,21 @@
         }
       }
     },
-    props: ['show'],
     data() {
       return {
         cardName: null,
         cardNumber: null,
         confirmCode: null,
+
+        isValid: null,
+        isConfirm: null,
+
         validateShow: false,
         cardFocus: false,
         codeFocus: false,
-        isValid: null,
-        isConfirm: null,
         cardNumberLength: 16,
         cardProps: {},
-        focusStyle: 'box-shadow: 0 0 6px deepskyblue',
+        focusStyle: 'box-shadow: 0 0 6px deepskyblue'
       }
     },
     computed: {
@@ -132,6 +134,7 @@
       ...mapActions(['addCard']),
       // Валидация поля Card Number
       validCardNum() {
+        this.cardFocus = false;
         if (this.cardNumber === null || this.cardNumber.length !== 16 || !isFinite(+this.cardNumber)) {
           this.validateShow = true;
           return this.isValid = false;
@@ -142,6 +145,7 @@
       },
       // Валидация кода подтверждения
       cardConfirm() {
+        this.codeFocus = false;
         if (+this.confirmCode === this.randNum) return this.isConfirm = true;
         if (this.confirmCode === null || this.confirmCode.length !== 4 || +this.confirmCode !== this.randNum || !isFinite(this.confirmCode)) {
           if (!this.validCardNum()) this.isValid = false;
@@ -161,7 +165,7 @@
             return this.cardProps = {
               id: this.LAST_INDEX,
               name: this.cardName || data.bankName || `Моя карта ${this.LAST_INDEX}`,
-              status: data.bankName ? true : false,
+              status: data.bankName ? !!1 : !!0,
               number: this.cardNumber,
               brand: data.brandLogoLightSvg,
               bg: data.formBackgroundColors,

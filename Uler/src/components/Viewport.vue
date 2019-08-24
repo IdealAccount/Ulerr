@@ -21,7 +21,6 @@
       }
     }
   }
-
   .side-menu__content {
     height: 100%;
     padding: 40px;
