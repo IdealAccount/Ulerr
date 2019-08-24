@@ -1,0 +1,47 @@
+.popup__btn {
+  display: flex;
+  margin: 0 auto;
+  justify-content: center;
+  padding: 10px;
+  width: 100px;
+  border: none;
+  transition: .3s;
+  &-add {
+    box-shadow: 0 0 2px;
+    &.active {
+      color: #fff;
+      background: #28a745;
+      box-shadow: 0 0 4px 1px rgba(#28a745,.8);
+      &:hover,
+      &:focus {
+        background: #218838;
+      }
+    }
+  }
+  &-remove {
+    background: #d9534f;
+    color: #fff;
+    margin-right: 15px;
+    &:hover,
+    &:focus {
+      background: #c9302c;
+    }
+  }
+  &-cancel {
+    color: #fff;
+    background: #0275d8;
+    &:hover,
+    &:focus {
+      background: #025aa5;
+    }
+  }
+  &-save {
+    display: flex;
+    background: #28a745;
+    color: #fff;
+    &:hover,
+    &:focus {
+      background: #218838;
+    }
+  }
+}
