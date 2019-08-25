@@ -3,73 +3,29 @@
     <h3>Ваш адрес</h3>
     <div class="address-container">
       <form class="address-form" @click="">
-        <div class="address-form__row">
-          <span :class="['open', {active : isOpen}]" @click="isOpen = !isOpen"></span>
-          <input id="region"
-                 class="address-form__input address-form__input-select"
-                 v-model="region"
-                 required
-          >
-          <label for="region" class="address-form__label" data-require="Регион *"></label>
-          <transition>
-            <ul class="region-list" v-if="isOpen">
-              <li class="region-list__item"></li>
-            </ul>
-          </transition>
-        </div>
-        <div class="address-form__row" v-for="input of formAddress">
-          <input :id="input.id"
-                 class="address-form__input"
-                 v-model="city"
+        <div v-for="(input,i) of formAddress"
+             :class="['address-form__row', {'address-form__row--mini' : input.mini}]"
+        >
+          <span :class="['open', {active : isOpen}]" @click="isOpen = !isOpen" v-if="input.selectList"></span>
+          <input :id="input.value"
+                 :class="['address-form__input', {'address-form__input-select' : input.selectList}]"
+                 v-model="inputModel[input.value]"
                  :required="input.required"
-                 @focus="cityOnFocus = true"
-                 @input="showHint(api.city, city)"
+                 @input="showHint(api[input.value], inputModel[input.value])"
           >
-          <label :for="city"
-                 :class="['address-form__label', {'address-form__label--mini' : input.mini}]"
-                 :data-require="input.required"></label>
-          <hintList :hintList="hintList" :selectItem="selectItem" v-if="input.dropdown"></hintList>
-        </div>
-        <div class="address-form__row">
-          <input id="street"
-                 class="address-form__input"
-                 v-model="street"
-                 required
-                 @focus="streetOnFocus = true"
-                 @input="showHint(api.street, street)"
+          <label :for="input.value"
+                 class="address-form__label"
+                 :data-require="input.dataAttr"
+                 @click="index = i + 1"
           >
-          <label for="street" class="address-form__label" data-require="Улица *"></label>
-          <hintList :hintList="hintList" v-show="isFocus" v-if="streetOnFocus"></hintList>
-        </div>
-        <div class="address-form__multiply">
-          <div class="address-form__row" v-for="input of formAddress">
-            <input :id="input.id"
-                   :key="input.id"
-                   class="address-form__input"
-                   v-model="house"
-                   @focus="houseOnFocus = true"
-                   required
-                   @input="showHint(api.house, house)"
-            >
-            <label for="house" class="address-form__label" data-require="Дом *"></label>
-            <hintList :hintList="hintList" v-show="isFocus" v-if="houseOnFocus"></hintList>
-          </div>
-          <div class="address-form__row">
-            <input id="building"
-                   class="address-form__input"
-                   v-model="building"
-                   required
-            >
-            <label for="building" class="address-form__label" data-require="Корпус"></label>
-          </div>
-          <div class="address-form__row">
-            <input id="apartment"
-                   class="address-form__input"
-                   v-model="apartment"
-                   required
-            >
-            <label for="apartment" class="address-form__label" data-require="Квартира"></label>
-          </div>
+          </label>
+          <dropdown-hint :dropdownHint="dropdownHint"
+                         :key="i"
+                         :selectItem="selectItem"
+                         v-show="isShow || (index === i + 1)"
+                         v-if="input.dropdown"
+          ></dropdown-hint>
+          <select-list v-else-if="input.selectList" v-show="isOpen"></select-list>
         </div>
       </form>
       <button @click.prevent="getAddress">Click</button>
@@ -85,24 +41,26 @@
   </div>
 </template>
 <script>
-  import HintList from './HintList'
+  import {mapState} from 'vuex'
+  import DropdownHint from './DropdownHint'
+  import SelectList from './SelectList'
 
   export default {
     components: {
-      HintList
+      DropdownHint,
+      SelectList
     },
     data() {
       return {
-        region: null,
-        city: null,
-        street: null,
-        house: null,
-        building: null,
-        apartment: null,
-
+        inputModel: {
+          city: null,
+          street: null,
+          house: null,
+        },
         isOpen: false,
         isShow: false,
-        isFocus: false,
+
+        index: '',
 
         cityOnFocus: false,
         streetOnFocus: false,
@@ -110,41 +68,53 @@
 
         inputValue: '',
 
-        hintSet: [],
+        dropdownHintSet: [],
         selectedAoguid: '',
         cityAoguid: '',
         streetAoguid: '',
       }
     },
+    updated() {
+      console.log(this.inputModel.city)
+    },
     computed: {
+      ...mapState(['formAddress']),
       api() {
         return {
-          city: '/api/v1/city?query=' + this.city,
-          street: `/api/v1/street?aoguid=${this.selectedAoguid}&query=${this.street}`,
+          city: '/api/v1/city?query=' + this.inputModel.city,
+          street: `/api/v1/street?aoguid=${this.selectedAoguid}&query=${this.inputModel.street}`,
           house: `/api/v1/houses?aoguid=${this.selectedAoguid}`,
         }
       },
-      hintList() {
-        return Array.from(this.hintSet);
+      dropdownHint() {
+        return Array.from(this.dropdownHintSet);
       },
     },
     methods: {
+
       async showHint(api, inputVal) {
         this.inputValue = inputVal;
+
         let res = await axios.get('https://fias1.euler.solutions:443' + api)
         let {data} = res.data;
         // this.inputValue = this.inputValue.toLowerCase();
-        this.hintSet = new Set();
+        this.dropdownHintSet = new Set();
 
         if (api === this.api.house) {
           console.log('!')
           data.filter(searchQuery => {
-            if (searchQuery.housenum.search(this.inputValue) !== -1) this.hintSet.add(searchQuery);
+            if (searchQuery.housenum.search(this.inputValue) !== -1) this.dropdownHintSet.add(searchQuery);
           })
+        }
+        if (api === this.api.street) {
+
+        }
+        if (api === this.api.city) {
+
         }
         data.filter(searchQuery => {
           if (searchQuery.item_fullname.search(this.inputValue) !== -1) {
-            this.hintSet.add(searchQuery)
+            this.dropdownHintSet.add(searchQuery)
           }
           // if (inputVal.length < 0) this.hintSet.clear();
         });
@@ -153,8 +123,7 @@
       selectItem(item) {
         this.$emit('selectItem', item)
         this.selectedAoguid = item.aoguid;
-        this.inputValue = '';
-        this.cityOnFocus = false;
+        this.inputValue = item.item_fullname;
         console.log(this.selectedAoguid)
       },
       openSelectList() {
@@ -186,13 +155,19 @@
   .address-container {
     padding: 0 60px;
   }
-
   .address-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     padding: 15px;
     &__row {
       position: relative;
       padding: 35px 20px 15px;
       margin-bottom: 20px;
+      flex: 0 0 100%;
+      &--mini {
+        flex-basis: calc(100% / 3 - 15px);
+      }
     }
     &__label {
       position: absolute;
@@ -215,13 +190,6 @@
         letter-spacing: .3px;
       }
     }
-    &__multiply {
-      display: flex;
-      justify-content: space-between;
-      .address-form__row {
-        width: calc(100% / 3 - 15px);
-      }
-    }
     &__input {
       width: 100%;
       border: none;
@@ -239,12 +207,8 @@
           }
         }
       }
-      &-select {
-
-      }
     }
   }
-
   .open {
     position: absolute;
     cursor: pointer;

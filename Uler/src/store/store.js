@@ -12,10 +12,46 @@ export const store = new Vuex.Store({
         id: 1,
         required: true,
         dataAttr: 'Регион *',
-        mini: false,
+        selectList: true,
+        value: 'region',
+
+      },
+      {
+        id: 2,
+        required: true,
+        dataAttr: 'Город *',
         dropdown: true,
-        value: 'region'
-      }
+        value: 'city'
+      },
+      {
+        id: 3,
+        required: true,
+        dataAttr: 'Улица *',
+        dropdown: true,
+        value: 'street'
+      },
+      {
+        id: 4,
+        required: true,
+        dataAttr: 'Дом *',
+        mini: true,
+        dropdown: true,
+        value: 'house'
+      },
+      {
+        id: 5,
+        required: true,
+        dataAttr: 'Корпус',
+        mini: true,
+        value: 'building'
+      },
+      {
+        id: 6,
+        required: true,
+        dataAttr: 'Квартира',
+        mini: true,
+        value: 'apartment'
+      },
     ]
   },
   getters: {
