@@ -11,6 +11,7 @@
                  required
           >
           <label for="region" class="address-form__label" data-require="Регион *"></label>
+          <hints :hints="regionHint" v-if="regionHint.length"></hints>
           <transition>
             <ul class="region-list" v-if="isOpen">
               <li class="region-list__item"></li>
@@ -73,7 +74,12 @@
   </div>
 </template>
 <script>
+  import Hints from './Hints'
+
   export default {
+    components: {
+      Hints
+    },
     data() {
       return {
         region: null,
@@ -82,21 +88,38 @@
         house: null,
         building: null,
         apartment: null,
+
         isOpen: false,
         isShow: false,
-        formData: {}
+        formData: {},
+
+        regionHint: [],
+        cityHint: [],
+        streetHint: [],
+        aoguid: ''
       }
     },
     mounted() {
     },
-    methods: {
-      getAddress() {
-        axios
-          .get('https://fias1.euler.solutions/api/swagger/index.html')
-          .then(response => {
-            document.body.append(response.data)
-          })
+    watch: {
+      async city() {
+        await axios
+          .get(`https://fias1.euler.solutions:443/api/v1/city?query=${this.city}`)
+          .then(response => response.data)
+          .then(result => {
+            console.log(result.data)
+            this.cityHint = result.data
+            this.aoguid = result.data[0].aoguid;
+            console.log(this.aoguid)
+          });
       },
+      async street() {
+        await axios
+          .get(`https://fias1.euler.solutions:443/api/v1/street?aoguid=${this.aoguid}&query=${this.street}`)
+          .then(response => console.log(response))
+      }
+    },
+    methods: {
       openSelectList() {
         this.formData = {
           region: this.region + ',',
@@ -225,4 +248,5 @@
       font-weight: bold;
     }
   }
+
 </style>
