@@ -1,7 +1,10 @@
 <template>
   <div class="popup">
     <span class="popup-close" @click="closePopup"></span>
-    <component :is="currentPopup" :key="currentPopup" :cardId="typeOfPopup.id ? typeOfPopup.id : null"></component>
+    <component :is="currentPopup"
+               :key="currentPopup"
+               :cardId="typeOfPopup.id ? typeOfPopup.id : null"
+    ></component>
   </div>
 </template>
 

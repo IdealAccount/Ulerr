@@ -11,41 +11,48 @@
                  required
           >
           <label for="region" class="address-form__label" data-require="Регион *"></label>
-          <hintList></hintList>
           <transition>
             <ul class="region-list" v-if="isOpen">
               <li class="region-list__item"></li>
             </ul>
           </transition>
         </div>
-        <div class="address-form__row">
-          <input id="city"
+        <div class="address-form__row" v-for="input of formAddress">
+          <input :id="input.id"
                  class="address-form__input"
                  v-model="city"
-                 required
+                 :required="input.required"
+                 @focus="cityOnFocus = true"
                  @input="showHint(api.city, city)"
           >
-          <label for="city" class="address-form__label" data-require="Город *"></label>
-          <hintList :hintList="hintList"></hintList>
+          <label :for="city"
+                 :class="['address-form__label', {'address-form__label--mini' : input.mini}]"
+                 :data-require="input.required"></label>
+          <hintList :hintList="hintList" :selectItem="selectItem" v-if="input.dropdown"></hintList>
         </div>
         <div class="address-form__row">
           <input id="street"
                  class="address-form__input"
                  v-model="street"
                  required
+                 @focus="streetOnFocus = true"
                  @input="showHint(api.street, street)"
           >
           <label for="street" class="address-form__label" data-require="Улица *"></label>
+          <hintList :hintList="hintList" v-show="isFocus" v-if="streetOnFocus"></hintList>
         </div>
         <div class="address-form__multiply">
-          <div class="address-form__row">
-            <input id="house"
+          <div class="address-form__row" v-for="input of formAddress">
+            <input :id="input.id"
+                   :key="input.id"
                    class="address-form__input"
                    v-model="house"
+                   @focus="houseOnFocus = true"
                    required
                    @input="showHint(api.house, house)"
             >
             <label for="house" class="address-form__label" data-require="Дом *"></label>
+            <hintList :hintList="hintList" v-show="isFocus" v-if="houseOnFocus"></hintList>
           </div>
           <div class="address-form__row">
             <input id="building"
@@ -92,56 +99,63 @@
         house: null,
         building: null,
         apartment: null,
-        formData: {},
 
         isOpen: false,
         isShow: false,
+        isFocus: false,
 
-        hintList: [],
+        cityOnFocus: false,
+        streetOnFocus: false,
+        houseOnFocus: false,
+
+        inputValue: '',
+
+        hintSet: [],
+        selectedAoguid: '',
         cityAoguid: '',
         streetAoguid: '',
       }
-    },
-    watch: {
-      async city() {
-
-        // .then(response => response.data)
-        // .then(result => {
-        //   this.citySet = new Set();
-        //   result.data.forEach(city => {
-        //     if (city.item_fullname.search(this.city) !== -1) {
-        //       this.citySet.add(city);
-        //     }
-        //   })
-        //   console.log(this.citySet);
-        //   if (!this.city.length) this.citySet.clear();
-        // });
-      },
     },
     computed: {
       api() {
         return {
           city: '/api/v1/city?query=' + this.city,
-          street: `/api/v1/street?aoguid=${this.cityAoguid}&query=${this.street}`,
-          house: `/api/v1/houses?aoguid=${this.streetAoguid}`,
+          street: `/api/v1/street?aoguid=${this.selectedAoguid}&query=${this.street}`,
+          house: `/api/v1/houses?aoguid=${this.selectedAoguid}`,
         }
       },
-
+      hintList() {
+        return Array.from(this.hintSet);
+      },
     },
     methods: {
       async showHint(api, inputVal) {
+        this.inputValue = inputVal;
         let res = await axios.get('https://fias1.euler.solutions:443' + api)
-        let {data} = await res.data;
+        let {data} = res.data;
+        // this.inputValue = this.inputValue.toLowerCase();
+        this.hintSet = new Set();
 
-        // data.forEach(city => {
-        //   if (city.item_fullname.search(inputVal) !== -1) {
-        //     if (this.hintSet.has(city)) console.log('Уже есть')
-        //     else this.hintSet.add(city)
-        //   }
-        //   console.log(this.hintSet);
-        // });
+        if (api === this.api.house) {
+          console.log('!')
+          data.filter(searchQuery => {
+            if (searchQuery.housenum.search(this.inputValue) !== -1) this.hintSet.add(searchQuery);
+          })
+        }
+        data.filter(searchQuery => {
+          if (searchQuery.item_fullname.search(this.inputValue) !== -1) {
+            this.hintSet.add(searchQuery)
+          }
+          // if (inputVal.length < 0) this.hintSet.clear();
+        });
         // if (!inputVal.length) this.hintSet.clear();
-        // this.hintList = Array.from(this.hintSet);
+      },
+      selectItem(item) {
+        this.$emit('selectItem', item)
+        this.selectedAoguid = item.aoguid;
+        this.inputValue = '';
+        this.cityOnFocus = false;
+        console.log(this.selectedAoguid)
       },
       openSelectList() {
         this.formData = {

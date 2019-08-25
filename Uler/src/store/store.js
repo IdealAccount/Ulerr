@@ -6,7 +6,17 @@ Vue.use(Vuex);
 
 export const store = new Vuex.Store({
   state: {
-    cards: []
+    cards: [],
+    formAddress: [
+      {
+        id: 1,
+        required: true,
+        dataAttr: 'Регион *',
+        mini: false,
+        dropdown: true,
+        value: 'region'
+      }
+    ]
   },
   getters: {
     LAST_INDEX(state) {

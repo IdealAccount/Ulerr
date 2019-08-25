@@ -14,9 +14,6 @@
     data() {
       return {}
     },
-    mounted() {
-      console.log(this.validateErrors)
-    },
     computed: {
       errors() {
         let err = [];
