@@ -1,9 +1,13 @@
 <template>
   <div class="hints-wrapper">
     <div class="hints-container">
-      <ul class="city-list" v-if="hints.length">
-        <li class="city-list__item" v-for="city of hints">
-          {{city.item_fullname}}
+      <ul class="city-list">
+        <li class="city-list__item"
+            v-for="(item,i) of hintList"
+            :data-aoguid="item.aoguid"
+            :key="i"
+        >
+          {{item.item_fullname}}
         </li>
       </ul>
     </div>
@@ -11,10 +15,12 @@
 </template>
 <script>
   export default {
-    props: ['hints'],
+    props: ['hintList'],
     data() {
-      return {}
-    }
+      return {
+      }
+    },
+
   }
 </script>
 <style lang="scss">
@@ -27,6 +33,7 @@
     overflow: hidden;
     box-shadow: 1px 6px 5px rgba(0, 0, 0, .3)
   }
+
   .hints-container {
     width: 350px;
     max-height: 300px;
@@ -35,6 +42,7 @@
     overflow-y: scroll;
     overflow-x: hidden;
   }
+
   .city-list {
     background: #fff;
     width: 100%;

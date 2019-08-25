@@ -2,7 +2,7 @@
   <div class="address">
     <h3>Ваш адрес</h3>
     <div class="address-container">
-      <form class="address-form">
+      <form class="address-form" @click="">
         <div class="address-form__row">
           <span :class="['open', {active : isOpen}]" @click="isOpen = !isOpen"></span>
           <input id="region"
@@ -11,7 +11,7 @@
                  required
           >
           <label for="region" class="address-form__label" data-require="Регион *"></label>
-          <hints :hints="regionHint" v-if="regionHint.length"></hints>
+          <hintList></hintList>
           <transition>
             <ul class="region-list" v-if="isOpen">
               <li class="region-list__item"></li>
@@ -23,14 +23,17 @@
                  class="address-form__input"
                  v-model="city"
                  required
+                 @input="showHint(api.city, city)"
           >
           <label for="city" class="address-form__label" data-require="Город *"></label>
+          <hintList :hintList="hintList"></hintList>
         </div>
         <div class="address-form__row">
           <input id="street"
                  class="address-form__input"
                  v-model="street"
                  required
+                 @input="showHint(api.street, street)"
           >
           <label for="street" class="address-form__label" data-require="Улица *"></label>
         </div>
@@ -40,6 +43,7 @@
                    class="address-form__input"
                    v-model="house"
                    required
+                   @input="showHint(api.house, house)"
             >
             <label for="house" class="address-form__label" data-require="Дом *"></label>
           </div>
@@ -74,11 +78,11 @@
   </div>
 </template>
 <script>
-  import Hints from './Hints'
+  import HintList from './HintList'
 
   export default {
     components: {
-      Hints
+      HintList
     },
     data() {
       return {
@@ -88,38 +92,57 @@
         house: null,
         building: null,
         apartment: null,
+        formData: {},
 
         isOpen: false,
         isShow: false,
-        formData: {},
 
-        regionHint: [],
-        cityHint: [],
-        streetHint: [],
-        aoguid: ''
+        hintList: [],
+        cityAoguid: '',
+        streetAoguid: '',
       }
-    },
-    mounted() {
     },
     watch: {
       async city() {
-        await axios
-          .get(`https://fias1.euler.solutions:443/api/v1/city?query=${this.city}`)
-          .then(response => response.data)
-          .then(result => {
-            console.log(result.data)
-            this.cityHint = result.data
-            this.aoguid = result.data[0].aoguid;
-            console.log(this.aoguid)
-          });
+
+        // .then(response => response.data)
+        // .then(result => {
+        //   this.citySet = new Set();
+        //   result.data.forEach(city => {
+        //     if (city.item_fullname.search(this.city) !== -1) {
+        //       this.citySet.add(city);
+        //     }
+        //   })
+        //   console.log(this.citySet);
+        //   if (!this.city.length) this.citySet.clear();
+        // });
       },
-      async street() {
-        await axios
-          .get(`https://fias1.euler.solutions:443/api/v1/street?aoguid=${this.aoguid}&query=${this.street}`)
-          .then(response => console.log(response))
-      }
+    },
+    computed: {
+      api() {
+        return {
+          city: '/api/v1/city?query=' + this.city,
+          street: `/api/v1/street?aoguid=${this.cityAoguid}&query=${this.street}`,
+          house: `/api/v1/houses?aoguid=${this.streetAoguid}`,
+        }
+      },
+
     },
     methods: {
+      async showHint(api, inputVal) {
+        let res = await axios.get('https://fias1.euler.solutions:443' + api)
+        let {data} = await res.data;
+
+        // data.forEach(city => {
+        //   if (city.item_fullname.search(inputVal) !== -1) {
+        //     if (this.hintSet.has(city)) console.log('Уже есть')
+        //     else this.hintSet.add(city)
+        //   }
+        //   console.log(this.hintSet);
+        // });
+        // if (!inputVal.length) this.hintSet.clear();
+        // this.hintList = Array.from(this.hintSet);
+      },
       openSelectList() {
         this.formData = {
           region: this.region + ',',

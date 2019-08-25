@@ -27,7 +27,7 @@
           v-model="cardNumber"
           @focus="cardFocus = true"
           @blur="validCardNum"
-          type="number"
+          type="text"
           placeholder="Введите номер"
           required
         >
@@ -117,11 +117,13 @@
     watch: {
       cardNumber() {
         this.isValid = null;
+        this.cardNumber = this.cardNumber.replace(/[^0-9]/, "");
         if (this.cardNumber.length > 16) this.cardNumber = this.cardNumber.slice(0, 16);
         if (this.cardNumber.length === 16) this.isValid = true;
       },
       confirmCode() {
         this.isConfirm = null;
+        this.confirmCode = this.confirmCode.replace(/[^0-9]/, "");
         if (this.confirmCode.length > 4) this.confirmCode = this.confirmCode.slice(0, 4);
         if (this.confirmCode.length === 4 && +this.confirmCode !== this.randNum) {
           this.validateShow = true;
