@@ -15,42 +15,29 @@
     <div class="popup-row"
     >
       <label class="popup__label" for="card-num">Номер карты:</label>
-      <div :class="['popup__input-wrapper',
-                   isValid ? 'valid' :
-                   isValid === false ? 'not-valid' :
-                   (isValid === null) ? '' : '']"
-           :style="isValid === null && cardFocus ? focusStyle : ''"
+      <input :class="['popup__input',
+                     isValid ? 'valid' :
+                     isValid === false ? 'not-valid' :
+                     (isValid === null) ? '' : '']"
+             id="card-num"
+             v-model="cardNumber"
+             @blur="validCardNum"
+             placeholder="Введите номер"
+             required
       >
-        <input
-          class="popup__input"
-          id="card-num"
-          v-model="cardNumber"
-          @focus="cardFocus = true"
-          @blur="validCardNum"
-          type="text"
-          placeholder="Введите номер"
-          required
-        >
-      </div>
     </div>
     <div class="popup-row">
       <label class="popup__label" for="card-confirm">Введите код подтверждения({{randNum}})</label>
-      <div :class="['popup__input-wrapper',
-                   isConfirm === true ? 'valid' :
-                   isConfirm === false ? 'not-valid' :
-                   (isConfirm === null) ? '' : '']"
-           :style="isConfirm === null && codeFocus ? focusStyle : ''"
+      <input id="card-confirm"
+             :class="['popup__input',
+                       isConfirm === true ? 'valid' :
+                       isConfirm === false ? 'not-valid' :
+                       (isConfirm === null) ? '' : '']"
+             v-model="confirmCode"
+             @blur="cardConfirm"
+             placeholder="Введите код"
+             required
       >
-        <input id="card-confirm"
-               class="popup__input"
-               v-model="confirmCode"
-               @focus="codeFocus = true"
-               @blur="cardConfirm"
-               placeholder="Введите код"
-               type="number"
-               required
-        >
-      </div>
     </div>
     <button :class="['popup__btn popup__btn-add', isDisabled ? 'not-valid' : 'active']"
             :disabled="isDisabled"
@@ -87,11 +74,9 @@
         isConfirm: null,
 
         validateShow: false,
-        cardFocus: false,
-        codeFocus: false,
+
         cardNumberLength: 16,
         cardProps: {},
-        focusStyle: 'box-shadow: 0 0 6px deepskyblue'
       }
     },
     computed: {
@@ -136,7 +121,6 @@
       ...mapActions(['addCard']),
       // Валидация поля Card Number
       validCardNum() {
-        this.cardFocus = false;
         if (this.cardNumber === null || this.cardNumber.length !== 16 || !isFinite(+this.cardNumber)) {
           this.validateShow = true;
           return this.isValid = false;
@@ -147,7 +131,6 @@
       },
       // Валидация кода подтверждения
       cardConfirm() {
-        this.codeFocus = false;
         if (+this.confirmCode === this.randNum) return this.isConfirm = true;
         if (this.confirmCode === null || this.confirmCode.length !== 4 || +this.confirmCode !== this.randNum || !isFinite(this.confirmCode)) {
           if (!this.validCardNum()) this.isValid = false;

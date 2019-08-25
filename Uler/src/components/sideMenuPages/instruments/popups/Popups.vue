@@ -101,37 +101,21 @@
       &:focus {
         box-shadow: 0 0 6px deepskyblue
       }
-      &-wrapper {
-        width: 100%;
-        border-radius: 4px;
-        border: 1px solid rgba(0, 0, 0, .2);
-        overflow: hidden;
-        &.not-valid {
-          border-color: red;
-          text-decoration: underline dotted red;
-          box-shadow: 0 0 6px red;
-          &-title {
-            background: red;
-            color: #fff;
-          }
+      &.not-valid {
+        border-color: red;
+        text-decoration: underline dotted red;
+        box-shadow: 0 0 6px red;
+        &-title {
+          background: red;
+          color: #fff;
         }
-        &.valid {
-          box-shadow: 0 0 6px green;
-          border-color: green;
-          &-title {
-            background: green;
-            color: #fff;
-          }
-        }
-        &.focused {
-          box-shadow: inset 0 0 6px deepskyblue;
-        }
-        .popup__input {
-          border: none;
-          width: calc(100% + 40px);
-          /*&:focus {*/
-            /*box-shadow: inset 0 0 6px rgba(deepskyblue, 1)*/
-          /*}*/
+      }
+      &.valid {
+        box-shadow: 0 0 6px green;
+        border-color: green;
+        &-title {
+          background: green;
+          color: #fff;
         }
       }
     }
