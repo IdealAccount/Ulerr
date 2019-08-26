@@ -90,4 +90,15 @@
     }
   }
 
+
+  .slide-fade-enter-active, .slide-fade-leave-active {
+    transition: opacity .3s;
+  }
+  .slide-fade-enter, .slide-fade-leave-to {
+    opacity: 0;
+  }
+  .slide-fade-enter-to, .slide-fade-leave {
+    opacity: 1;
+  }
+
 </style>

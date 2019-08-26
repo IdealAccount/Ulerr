@@ -10,11 +10,11 @@
         >
           <input :id="input.type"
                  :class="['address-form__input', {'address-form__input-select' : input.selectList}]"
-                 v-model="inputModel[input.type].val"
-                 :required="input.required"
-                 @input="getDropdownHint(inputModel[input.type].val, input.type)"
-                 :key="input.type"
+                 v-model="formInputModel[input.type].val"
+                 @input="getDropdownHint(formInputModel[input.type].val, input.type)"
                  @blur="validateForm(input.type)"
+                 :key="input.type"
+                 :required="input.required"
           >
           <label :for="input.type"
                  :class="['address-form__label',
@@ -24,7 +24,6 @@
                  :data-require="input.dataAttr"
                  :data-id="i"
                  @click="type = type === input.type ? 'null' : input.type"
-
           >
           </label>
           <dropdown-hint :dropdownHint="dropdownHint"
@@ -58,31 +57,6 @@
     },
     data() {
       return {
-        inputModel: {
-          city: {
-            parentId: null,
-            id: '',
-            val: ''
-          },
-          street: {
-            parentId: '',
-            id: '',
-            val: ''
-          },
-          house: {
-            val: '',
-          },
-          building: {
-            val: '',
-          },
-          apartment: {
-            val: '',
-          },
-          region: {
-            id: '',
-            val: '',
-          }
-        },
         validation: {
           city: null,
           street: null,
@@ -93,26 +67,24 @@
         isOpen: false,
         isShow: false,
 
-        index: null,
         type: null,
 
-        cityOnFocus: false,
-        streetOnFocus: false,
-        houseOnFocus: false,
         address: '',
-        inputStr: '',
 
         isValid: false,
         dropdownHintSet: [],
       }
     },
     computed: {
-      ...mapState(['formAddress']),
+      ...mapState([
+        'formAddress',
+        'formInputModel'
+      ]),
       api() {
         return {
-          city: '/api/v1/city?query=' + this.inputModel.city.val,
-          street: `/api/v1/street?aoguid=${this.inputModel.city.id}&query=${this.inputModel.street.val}`,
-          house: `/api/v1/houses?aoguid=${this.inputModel.street.id}`,
+          city: '/api/v1/city?query=' + this.formInputModel.city.val,
+          street: `/api/v1/street?aoguid=${this.formInputModel.city.id}&query=${this.formInputModel.street.val}`,
+          house: `/api/v1/houses?aoguid=${this.formInputModel.street.id}`,
         }
       },
       isDisabled() {
@@ -128,20 +100,26 @@
       }
     },
     methods: {
+      ...mapActions([
+        'setSelectInput',
+        'getRegionAsync'
+      ]),
       // Поиск и формирование массива с совпадениями (подсказками)
       async getDropdownHint(inputStr, type) {
         if (type === 'region' || type === 'building' || type === 'apartment' || !this.api) return;
         if (this.type !== type) this.type = type;
 
         let name = (type === 'house') ? 'housenum' : 'item_fullname';
+
         let res = await axios.get('https://fias1.euler.solutions:443' + this.api[type]);
-        let {data} = await res.data;
+        let {data} = res.data;
         this.dropdownHintSet = new Set();
 
         data.filter(item => {
           item.type = type;
+
           if (item[name].search(inputStr) !== -1) {
-            this.setSelectInput(type, item);
+            this.setSelectInput({item, type});
             this.dropdownHintSet.add(item);
           }
         });
@@ -150,56 +128,40 @@
       selectItem(item) {
         this.$emit('selectItem', item);
         let type = item.type;
-        let propName = type === 'house' ? 'housenum' : 'item_fullname'
-        this.setSelectInput(type, item);
-        this.setRegion(type);
-        this.inputModel[type].val = item[propName];
+        let propName = type === 'house' ? 'housenum' : 'item_fullname';
+        this.setSelectInput({item, type});
+        this.getRegionAsync();
+        this.formInputModel[type].val = item[propName];
       },
-      setSelectInput(type, source) {
-        if (type === 'house') {
-          this.inputModel[type].housenum = source.housenum;
-          this.inputModel[type].postalCode = source.postalcode;
-        }
-        else {
-          if (type === 'city') {
-            this.inputModel[type].id = source.aoguid;
-            this.inputModel[type].parentId = source.parentguid
-          } else if (type === 'street') {
-            this.inputModel[type].id = source.aoguid;
-            this.inputModel[type].parentId = source.parentguid
-          }
-        }
-      },
-
-      async setRegion(type) {
-        if (!this.inputModel.city.val.length) return
-        if (this.inputModel.city.parentId === this.inputModel.region.id) return;
-        if (type === 'city') {
-          let res = await axios(`https://fias1.euler.solutions:443/api/v1/address?aoguid=${this.inputModel.city.parentId}`);
-          let {data} = res.data;
-          this.inputModel.region.val = data.fullname || data.item_fullname;
-          this.type = null;
-        } else return;
-      },
+      // // async getRegionAsync(type) {
+      //   if (!this.formInputModel.city.val.length) return
+      //   if (this.formInputModel.city.parentId === this.formInputModel.region.id) return;
+      //   if (type === 'city') {
+      //     let res = await axios(`https://fias1.euler.solutions:443/api/v1/address?aoguid=${this.formInputModel.city.parentId}`);
+      //     let {data} = res.data;
+      //     this.formInputModel.region.val = data.fullname || data.item_fullname;
+      //     this.type = null;
+      //   } else return;
+      // },
       validateForm(type) {
         if (type === 'city' || type === 'street') {
-          if (!this.inputModel[type].id || !this.inputModel[type].val) {
+          if (!this.formInputModel[type].id || !this.formInputModel[type].val) {
             this.validation[type] = false;
           } else this.validation[type] = true;
         } else if (type === 'region') {
-          if (!this.inputModel[type].val) this.validation[type] = false;
+          if (!this.formInputModel[type].val) this.validation[type] = false;
           else this.validation[type] = true;
         }
         else if (type === 'house') {
-          if (!this.inputModel[type].housenum || !this.inputModel[type].postalCode) {
+          if (!this.formInputModel[type].housenum || !this.formInputModel[type].postalCode) {
             this.validation[type] = false;
           } else this.validation[type] = true;
         } else this.validation[type] = null;
-        this.setRegion(type);
+        this.getRegionAsync();
       },
       showAddress() {
         this.isShow = !this.isShow;
-        this.address = this.inputModel.house.postalCode + ', ' + this.inputModel.city.val + ', ' + this.inputModel.street.val + ', ' + this.inputModel.building.val + ', ' + this.inputModel.apartment.val
+        this.address = this.formInputModel.house.postalCode + ', ' + this.formInputModel.city.val + ', ' + this.formInputModel.street.val + ', ' + this.formInputModel.building.val + ', ' + this.formInputModel.apartment.val
       },
     }
   }
