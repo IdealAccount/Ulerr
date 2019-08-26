@@ -11,18 +11,17 @@ export const store = new Vuex.Store({
       {
         id: 1,
         required: true,
-        dataAttr: 'Регион *',
-        selectList: true,
+        dataAttr: 'Город *',
         dropdown: true,
-        type: 'region',
-
+        type: 'city'
       },
       {
         id: 2,
         required: true,
-        dataAttr: 'Город *',
+        dataAttr: 'Регион *',
+        selectList: true,
         dropdown: true,
-        type: 'city'
+        type: 'region',
       },
       {
         id: 3,
@@ -53,6 +52,9 @@ export const store = new Vuex.Store({
         mini: true,
         type: 'apartment'
       },
+    ],
+    formData: [
+
     ]
   },
   getters: {
@@ -78,7 +80,8 @@ export const store = new Vuex.Store({
       state.cards.forEach(card => {
         if (card.id === payload.id) return card.name = payload.name;
       })
-    }
+    },
+
   },
   actions: {
     removeCard({commit, state}, id) {

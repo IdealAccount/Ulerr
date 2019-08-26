@@ -1,7 +1,7 @@
 <template>
   <div class="dropdown-wrapper">
     <div class="dropdown-container">
-      <ul class="dropdown-list">
+      <ul class="dropdown-list" @click="hidde">
         <li class="dropdown-list__item"
             v-for="(item,i) of dropdownHint"
             :key="i"
@@ -25,8 +25,9 @@
     methods: {
       getSelectItem(selectItem) {
         this.selectItem(selectItem)
-        console.log(this.dropdownHint)
-        this.dropdownHint.clear();
+      },
+      hidde() {
+        this.$parent.$data.type = null
       }
     }
 
@@ -39,14 +40,14 @@
       background: #fff;
       left: 0;
       top: 95%;
-      width: 330px;
+      width: 296px;
       z-index: 100;
       overflow: hidden;
       box-shadow: 1px 6px 5px rgba(0, 0, 0, .3);
       border-radius: 0 0 6px ;
     }
     &-container {
-      width: 350px;
+      width: 315px;
       height: 100%;
       max-height: calc(56px * 6);
       background: #fff;
