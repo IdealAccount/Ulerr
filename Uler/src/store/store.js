@@ -13,7 +13,8 @@ export const store = new Vuex.Store({
         required: true,
         dataAttr: 'Регион *',
         selectList: true,
-        value: 'region',
+        dropdown: true,
+        type: 'region',
 
       },
       {
@@ -21,14 +22,14 @@ export const store = new Vuex.Store({
         required: true,
         dataAttr: 'Город *',
         dropdown: true,
-        value: 'city'
+        type: 'city'
       },
       {
         id: 3,
         required: true,
         dataAttr: 'Улица *',
         dropdown: true,
-        value: 'street'
+        type: 'street'
       },
       {
         id: 4,
@@ -36,21 +37,21 @@ export const store = new Vuex.Store({
         dataAttr: 'Дом *',
         mini: true,
         dropdown: true,
-        value: 'house'
+        type: 'house'
       },
       {
         id: 5,
         required: true,
         dataAttr: 'Корпус',
         mini: true,
-        value: 'building'
+        type: 'building'
       },
       {
         id: 6,
         required: true,
         dataAttr: 'Квартира',
         mini: true,
-        value: 'apartment'
+        type: 'apartment'
       },
     ]
   },

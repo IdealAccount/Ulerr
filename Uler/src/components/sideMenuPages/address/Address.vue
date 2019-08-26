@@ -3,35 +3,38 @@
     <h3>Ваш адрес</h3>
     <div class="address-container">
       <form class="address-form" @click="">
+        <!--Контейнер поля ввода -->
         <div v-for="(input,i) of formAddress"
              :class="['address-form__row', {'address-form__row--mini' : input.mini}]"
+             :key="i"
         >
           <span :class="['open', {active : isOpen}]" @click="isOpen = !isOpen" v-if="input.selectList"></span>
-          <input :id="input.value"
+          <input :id="input.type"
                  :class="['address-form__input', {'address-form__input-select' : input.selectList}]"
-                 v-model="inputModel[input.value]"
+                 v-model="inputModel[input.type].val"
                  :required="input.required"
-                 @input="showHint(api[input.value], inputModel[input.value])"
+                 @input="showHint(inputModel[input.type].val, input.type)"
+                 :key="input.type"
           >
-          <label :for="input.value"
+          <label :for="input.type"
                  class="address-form__label"
                  :data-require="input.dataAttr"
-                 @click="index = i + 1"
+                 @click="showDropdown(input.id)"
           >
           </label>
-          <dropdown-hint :dropdownHint="dropdownHint"
+          <dropdown-hint :dropdownHint="input.id === index ? dropdownHintSet : []"
                          :key="i"
                          :selectItem="selectItem"
-                         v-show="isShow || (index === i + 1)"
+                         v-show="!isShow && (input.id === index)"
                          v-if="input.dropdown"
           ></dropdown-hint>
-          <select-list v-else-if="input.selectList" v-show="isOpen"></select-list>
-        </div>
+        </div> <!-- Контейнер поля в вода END -->
       </form>
-      <button @click.prevent="getAddress">Click</button>
-      <div class="form-result" v-if="isShow">
+      <button @click.prevent="showAddress" class="address__btn">Submit</button>
+
+      <div class="form-result" v-if="false">
         <ul class="result-list">
-          <li class="result-list__item" v-for="(item,idx) in formData" :key="idx">
+          <li class="result-list__item">
             <span>{{item}}</span>
           </li>
         </ul>
@@ -53,9 +56,29 @@
     data() {
       return {
         inputModel: {
-          city: null,
-          street: null,
-          house: null,
+          city: {
+            parentId: null,
+            id: '',
+            val: ''
+          },
+          street: {
+            parentId: '',
+            id: '',
+            val: ''
+          },
+          house: {
+            id: '',
+            val: '',
+          },
+          building: {
+            val: '',
+          },
+          apartment: {
+            val: '',
+          },
+          region: {
+            val: '',
+          }
         },
         isOpen: false,
         isShow: false,
@@ -66,83 +89,82 @@
         streetOnFocus: false,
         houseOnFocus: false,
 
-        inputValue: '',
+        inputStr: '',
 
         dropdownHintSet: [],
-        selectedAoguid: '',
-        cityAoguid: '',
-        streetAoguid: '',
       }
-    },
-    updated() {
-      console.log(this.inputModel.city)
     },
     computed: {
       ...mapState(['formAddress']),
       api() {
         return {
-          city: '/api/v1/city?query=' + this.inputModel.city,
-          street: `/api/v1/street?aoguid=${this.selectedAoguid}&query=${this.inputModel.street}`,
-          house: `/api/v1/houses?aoguid=${this.selectedAoguid}`,
+          city: '/api/v1/city?query=' + this.inputModel.city.val,
+          region: '/api/v1/address?aoguid=' + this.inputModel.city.parentId,
+          street: `/api/v1/street?aoguid=${this.inputModel.city.id}&query=${this.inputModel.street.val}`,
+          house: `/api/v1/houses?aoguid=${this.inputModel.street.id}`,
         }
-      },
-      dropdownHint() {
-        return Array.from(this.dropdownHintSet);
       },
     },
     methods: {
+      showHint(inputStr, type) {
+        this.inputStr = inputStr;
+        if (type === 'apartment' || type === 'building') return;
 
-      async showHint(api, inputVal) {
-        this.inputValue = inputVal;
-
-        let res = await axios.get('https://fias1.euler.solutions:443' + api)
+        let res = axios.get('https://fias1.euler.solutions:443' + this.api[type])
         let {data} = res.data;
-        // this.inputValue = this.inputValue.toLowerCase();
         this.dropdownHintSet = new Set();
 
-        if (api === this.api.house) {
-          console.log('!')
-          data.filter(searchQuery => {
-            if (searchQuery.housenum.search(this.inputValue) !== -1) this.dropdownHintSet.add(searchQuery);
+        if (type === 'region') {
+          data.forEach(searchQuery => {
+            searchQuery.type = type;
+            this.dropdownHintSet.add(searchQuery);
           })
+        } else if (type === 'city') {
+          console.log('type: city')
+          data.filter(searchQuery => {
+            if (searchQuery.item_fullname.search(this.inputStr) !== -1) {
+              searchQuery.type = type;
+              this.dropdownHintSet.add(searchQuery)
+            }
+          });
+        } else if (type === 'house') {
+          console.log('type house')
+          data.filter(searchQuery => {
+            console.log(searchQuery)
+            if (searchQuery.housenum.search(this.inputStr) !== -1) {
+              searchQuery.type = type;
+              this.dropdownHintSet.add(searchQuery);
+            }
+          })
+        } else if (type === 'street') {
+          console.log('type: street')
+          data.filter(searchQuery => {
+            if (searchQuery.item_fullname.search(this.inputStr) !== -1) {
+              searchQuery.type = type;
+              this.dropdownHintSet.add(searchQuery)
+            }
+          });
         }
-        if (api === this.api.street) {
 
-        }
-        if (api === this.api.city) {
 
-        }
-        data.filter(searchQuery => {
-          if (searchQuery.item_fullname.search(this.inputValue) !== -1) {
-            this.dropdownHintSet.add(searchQuery)
-          }
-          // if (inputVal.length < 0) this.hintSet.clear();
-        });
-        // if (!inputVal.length) this.hintSet.clear();
+        // if (!inputStr.length) this.hintSet.clear();
       },
       selectItem(item) {
-        this.$emit('selectItem', item)
-        this.selectedAoguid = item.aoguid;
-        this.inputValue = item.item_fullname;
-        console.log(this.selectedAoguid)
-      },
-      openSelectList() {
-        this.formData = {
-          region: this.region + ',',
-          city: `г. ${this.city},`,
-          street: `пр-кт. ${this.street},`,
-          house: `д. ${this.house},`,
-          building: {
-            get str() {
-              if (!this.apartment) {
-                return this.building ? `к. ${this.building}` : null
-              } else return this.building ? `к. ${this.building},` : null
-            }
-          },
-          apartment: this.apartment ? `кв. ${this.apartment}` : null,
-        };
-        console.log(this.formData);
+        this.$emit('selectItem', item);
+
+        this.inputModel[item.type].id = item.aoguid || item.postalCode;
+        this.inputModel[item.type].parentId ? item.parentguid : false;
+        this.inputModel[item.type].val = item.item_fullname || item.housenum;
+
+        this.dropdownHintSet.clear();
+
         this.isShow = !this.isShow;
+      },
+      showDropdown(id) {
+        this.index = id;
+        this.isShow = !this.isShow;
+      },
+      showAddress() {
 
       },
       validateForm() {
@@ -155,11 +177,11 @@
   .address-container {
     padding: 0 60px;
   }
+
   .address-form {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    padding: 15px;
     &__row {
       position: relative;
       padding: 35px 20px 15px;
@@ -207,8 +229,12 @@
           }
         }
       }
+      &--select {
+
+      }
     }
   }
+
   .open {
     position: absolute;
     cursor: pointer;
@@ -247,6 +273,15 @@
     &__item {
       margin-right: 5px;
       font-weight: bold;
+    }
+  }
+  .address__btn {
+    padding: 10px 40px;
+    border: 1px solid #c4c4c4;
+    transition: .3s;
+    &:hover {
+      color: #fff;
+      background: green;
     }
   }
 

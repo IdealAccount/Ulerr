@@ -6,8 +6,9 @@
             v-for="(item,i) of dropdownHint"
             :key="i"
             @click="getSelectItem(item)"
+            tabindex="0"
         >
-          {{item.fullname || item.housenum}}
+          {{item.fullname || item.housenum }}
         </li>
       </ul>
     </div>
@@ -24,6 +25,8 @@
     methods: {
       getSelectItem(selectItem) {
         this.selectItem(selectItem)
+        console.log(this.dropdownHint)
+        this.dropdownHint.clear();
       }
     }
 
@@ -40,7 +43,7 @@
       z-index: 100;
       overflow: hidden;
       box-shadow: 1px 6px 5px rgba(0, 0, 0, .3);
-      border-radius: 0 0 6px 6px;
+      border-radius: 0 0 6px ;
     }
     &-container {
       width: 350px;
@@ -73,7 +76,8 @@
           background: deepskyblue;
           transition: .3s;
         }
-        &:hover {
+        &:hover,
+        &:focus {
           background: #f3f3f3;
           &:before {
             height: 100%;

@@ -1,6 +1,6 @@
 <template>
   <div class="popup">
-    <span class="popup-close" @click="closePopup"></span>
+    <span class="popup-close" @click="$parent.$data.isShow = false"></span>
     <component :is="currentPopup"
                :key="currentPopup"
                :cardId="typeOfPopup.id ? typeOfPopup.id : null"
@@ -22,29 +22,24 @@
     },
     computed: {
       currentPopup() {
-        // if (this.typeOfPopup.type === 'remove') return 'PopupRemove';
-        // if (this.typeOfPopup.type === 'adding') return 'PopupAdding';
-        // if (this.typeOfPopup.type === 'edit') return 'PopupEdit';
-        switch (this.typeOfPopup.type) {
-          case 'remove':
-            return 'PopupRemove'
-            break;
-
-          case 'adding':
-            return 'PopupAdding'
-            break;
-
-          case 'edit':
-            return 'PopupEdit'
-            break;
-        }
+        if (this.typeOfPopup.type === 'remove') return 'PopupRemove';
+        if (this.typeOfPopup.type === 'adding') return 'PopupAdding';
+        if (this.typeOfPopup.type === 'edit') return 'PopupEdit';
+        // switch (this.typeOfPopup.type) {
+        //   case 'remove':
+        //     return 'PopupRemove'
+        //     break;
+        //
+        //   case 'adding':
+        //     return 'PopupAdding'
+        //     break;
+        //
+        //   case 'edit':
+        //     return 'PopupEdit'
+        //     break;
+        // }
       }
     },
-    methods: {
-      closePopup() {
-        this.$parent.$data.isShow = false
-      }
-    }
   }
 </script>
 <style lang="scss">
