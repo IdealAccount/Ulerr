@@ -103,7 +103,7 @@ export const store = new Vuex.Store({
         if (card.id === payload.id) return card.name = payload.name;
       })
     },
-
+    // Адрес
     SET_SELECT_INPUT(state, {item, type}) {
       if (type === 'house') {
         state.formInputModel[type].housenum = item.housenum;
@@ -120,8 +120,8 @@ export const store = new Vuex.Store({
       }
     },
     GET_REGION(state, data) {
-        if (!state.formInputModel.city.val.length) return;
-        if (+state.formInputModel.city.parentId === +state.formInputModel.region.id) return;
+      let inputModel = state.formInputModel;
+        if (!inputModel.city.val.length || (+inputModel.city.parentId === +inputModel.region.id)) return;
           state.formInputModel.region.val = data.fullname || data.item_fullname;
       },
   },
@@ -134,7 +134,7 @@ export const store = new Vuex.Store({
       for (let item of state.cards) {
         if (item.number === card.number) check = true;
       }
-      return check ? false : commit('ADD_CARD', card);
+      return check ? alert("Эта карта уже существует") : commit('ADD_CARD', card);
     },
     changeCardName({commit, state}, payload) {
       commit('CHANGE_NAME', payload);
