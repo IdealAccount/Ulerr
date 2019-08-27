@@ -2,7 +2,7 @@
   <div class="viewport">
     <div class="viewport-body">
       <div class="side-menu__content">
-        <transition name="fade">
+        <transition name="fade" mode="out-in">
           <router-view></router-view>
         </transition>
       </div>
@@ -27,18 +27,15 @@
     height: 100%;
     padding: 40px;
   }
-  .fade-enter-active, .fade-leave-active {
-    transition: transform .3s ease-in-out, opacity .5s ease;
-    z-index: 0;
-    position: relative;
-    top: 0;
+  .fade-enter-active {
+    transition: all .3s ease;
+  }
+  .fade-leave-active {
+    transition: .4s cubic-bezier(1.0, 0.5, 0.8, 1.0);
   }
   .fade-enter, .fade-leave-to {
+    transform: translateX(-20%);
     opacity: 0;
-    transform: translateX(-100%)
   }
-  .fade-enter-to, .fade-leave {
-    opacity: 1;
-    transform: translateX(0)
-  }
+
 </style>

@@ -20,10 +20,9 @@
   }
 </script>
 <style lang="scss">
-  aside {
-  }
   .side-menu {
-    /*position: fixed;*/
+    position: relative;
+    z-index: 100;
     padding: 30px 0;
     background: #f3f3f3;
     width: 250px;

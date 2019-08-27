@@ -37,10 +37,11 @@
         </div> <!-- Контейнер поля в вода END -->
       </form>
       <button @click.prevent="showAddress" class="address__btn" :disabled="isDisabled">Submit</button>
-
-      <div class="form-result" v-if="isShow">
-        <p v-text="address"></p>
-      </div>
+      <ul class="result-list" v-if="isShow">
+        <li v-for="item of address" class="result-list__item">
+          <strong>{{item.str}}</strong>
+        </li>
+      </ul>
 
     </div>
   </div>
@@ -133,16 +134,6 @@
         this.getRegionAsync();
         this.formInputModel[type].val = item[propName];
       },
-      // // async getRegionAsync(type) {
-      //   if (!this.formInputModel.city.val.length) return
-      //   if (this.formInputModel.city.parentId === this.formInputModel.region.id) return;
-      //   if (type === 'city') {
-      //     let res = await axios(`https://fias1.euler.solutions:443/api/v1/address?aoguid=${this.formInputModel.city.parentId}`);
-      //     let {data} = res.data;
-      //     this.formInputModel.region.val = data.fullname || data.item_fullname;
-      //     this.type = null;
-      //   } else return;
-      // },
       validateForm(type) {
         if (type === 'city' || type === 'street') {
           if (!this.formInputModel[type].id || !this.formInputModel[type].val) {
@@ -161,7 +152,13 @@
       },
       showAddress() {
         this.isShow = !this.isShow;
-        this.address = this.formInputModel.house.postalCode + ', ' + this.formInputModel.city.val + ', ' + this.formInputModel.street.val + ', ' + this.formInputModel.building.val + ', ' + this.formInputModel.apartment.val
+        this.address = [
+          {str: this.formInputModel.house.postalCode + ', '},
+          {str: 'г. ' + this.formInputModel.city.val + ', '},
+          {str: 'пр-кт ' + this.formInputModel.street.val + ', '},
+          {str: 'д. ' + this.formInputModel.building.val + ', '},
+          {str: 'кв.' + this.formInputModel.apartment.val},
+        ]
       },
     }
   }
@@ -268,7 +265,6 @@
     display: flex;
     &__item {
       margin-right: 5px;
-      font-weight: bold;
     }
   }
 
@@ -276,6 +272,7 @@
     padding: 10px 40px;
     border: 1px solid #c4c4c4;
     transition: .3s;
+    margin-bottom: 30px;
     &:disabled {
       background: inherit;
       &:hover {
