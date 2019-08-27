@@ -34,7 +34,7 @@
     position: absolute;
     z-index: 100;
     right: 30px;
-    top: 54%;
+    top: 44%;
     transform: translate(100%);
     width: 180px;
     background: rgba(#d9534f,.9);

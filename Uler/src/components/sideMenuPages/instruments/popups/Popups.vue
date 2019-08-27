@@ -50,9 +50,10 @@
     transform: translateX(-50%);
     width: 400px;
     z-index: 100;
-    padding: 40px 40px 30px;
     background: #fff;
+    border-radius: 10px;
     box-shadow: 0 0 8px rgba(0, 0, 0, .3);
+
     &-close {
       position: absolute;
       top: 5px;
@@ -60,6 +61,8 @@
       z-index: 10;
       padding: 15px;
       cursor: pointer;
+      background: #fff;
+      border-radius: 50%;
       &:before,
       &:after {
         position: absolute;
@@ -79,6 +82,12 @@
     h4 {
       text-align: center;
       margin-bottom: 30px;
+    }
+    &-adding,
+    &-edit,
+    &-remove {
+      border-radius: 10px;
+      padding: 40px 40px 30px;
     }
     &-row {
       position: relative;
@@ -120,6 +129,6 @@
     &__btns-group {
       display: flex;
     }
-    @import '@/assets/scss/_btn';
+    @import '../../../../assets/scss/_btn';
   }
 </style>

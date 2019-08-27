@@ -1,17 +1,12 @@
 <template>
-  <div class="popup-adding" @keypress.13="addingCard">
+  <div class="popup-adding" @keypress.13="addingCard" :style="data.bankName ? popupStyle : ''">
     <h4>Добавить карту</h4>
-    <div class="popup-row">
-      <label class="popup__label" for="card-name">Название карты:</label>
-      <input class="popup__input"
-             id="card-name"
-             placeholder="Введите название"
-             v-model="cardName"
-             maxlength="13"
-             required
-             v-focus
-      >
-    </div>
+    <transition name="fade-logo">
+      <div class="popup__card-logo" v-if="data.bankLogoSmallLightSvg">
+        <img :src="data.bankLogoSmallLightSvg">
+      </div>
+    </transition>
+
     <div class="popup-row"
     >
       <label class="popup__label" for="card-num">Номер карты:</label>
@@ -23,6 +18,19 @@
              v-model="cardNumber"
              @blur="validCardNum"
              placeholder="Введите номер"
+             required
+             @input="getCardProps"
+             maxlength="16"
+             v-focus
+      >
+    </div>
+    <div class="popup-row">
+      <label class="popup__label" for="card-name">Название карты:</label>
+      <input class="popup__input"
+             id="card-name"
+             placeholder="Введите название"
+             v-model="cardName"
+             maxlength="13"
              required
       >
     </div>
@@ -36,6 +44,7 @@
              v-model="confirmCode"
              @blur="cardConfirm"
              placeholder="Введите код"
+             maxlength="4"
              required
       >
     </div>
@@ -56,7 +65,6 @@
     components: {
       Validate
     },
-    props: ['show'],
     directives: {
       focus: {
         inserted(el) {
@@ -77,6 +85,7 @@
 
         cardNumberLength: 16,
         cardProps: {},
+        data: {},
       }
     },
     computed: {
@@ -97,25 +106,31 @@
           cardNum: this.isValid,
           confirmCode: this.isConfirm
         }
-      }
+      },
+      popupStyle() {
+        if (this.data.bankName) {
+          return {
+            background: `linear-gradient(45deg, ${this.data.formBackgroundColors[0]}, ${this.data.formBackgroundColors[1]})`,
+            color: this.data.formTextColor,
+          }
+        }
+      },
     },
     watch: {
       cardNumber() {
         this.isValid = null;
         this.cardNumber = this.cardNumber.replace(/[^0-9]/, "");
-        if (this.cardNumber.length > 16) this.cardNumber = this.cardNumber.slice(0, 16);
         if (this.cardNumber.length === 16) this.isValid = true;
       },
       confirmCode() {
         this.isConfirm = null;
         this.confirmCode = this.confirmCode.replace(/[^0-9]/, "");
-        if (this.confirmCode.length > 4) this.confirmCode = this.confirmCode.slice(0, 4);
-        if (this.confirmCode.length === 4 && +this.confirmCode !== this.randNum) {
+        if ((this.confirmCode.length === 4) && (+this.confirmCode !== this.randNum)) {
           this.validateShow = true;
           return this.isConfirm = false;
         }
         if (+this.confirmCode === this.randNum) this.isConfirm = true;
-      }
+      },
     },
     methods: {
       ...mapActions(['addCard']),
@@ -137,30 +152,28 @@
           this.validateShow = true;
           return this.isConfirm = false;
         }
+
+      },
+      async getCardProps() {
+        if (this.cardNumber.length !== 6) return;
+        let res = await axios.get(`https://api.cardinfo.online?apiKey=2b2b2ebfc6566238a3405dae4686b60c&input=${this.cardNumber}`);
+        this.data = res.data;
+        this.cardName = this.data.bankName;
       },
       // Добавляем новую карту
       async addingCard() {
         // Если валидация не пройдена
         if (this.isDisabled) return;
-        let number = this.cardNumber.slice(0, 6);
-        await axios
-          .get(`https://api.cardinfo.online?apiKey=2b2b2ebfc6566238a3405dae4686b60c&input=${number}`)
-          .then(response => response.data)
-          .then(data => {
-            return this.cardProps = {
-              id: this.LAST_INDEX,
-              name: this.cardName || data.bankName || `Моя карта ${this.LAST_INDEX}`,
-              status: data.bankName ? !!1 : !!0,
-              number: this.cardNumber,
-              brand: data.brandLogoLightSvg,
-              bg: data.formBackgroundColors,
-              color: data.formTextColor,
-              logo: data.bankLogoSmallLightSvg
-            }
-          })
-          .catch(error => console.log(error));
-
-        this.addCard(this.cardProps);
+        this.addCard({
+          id: this.LAST_INDEX,
+          name: this.cardName || this.data.bankName || `Моя карта ${this.LAST_INDEX}`,
+          status: this.data.bankName ? !!1 : !!0,
+          number: this.cardNumber,
+          brand: this.data.bankName ? this.data.brandLogoLightSvg : this.data.brandLogoDarkSvg,
+          bg: this.data.formBackgroundColors,
+          color: this.data.formTextColor,
+          logo: this.data.bankLogoSmallLightSvg
+        });
         this.cardName = null;
         this.cardNumber = null;
         this.confirmCode = null;
@@ -170,3 +183,24 @@
     }
   }
 </script>
+<style lang="scss">
+  .popup__card-logo {
+    text-align: center;
+    img {
+      width: 50px;
+      height: 50px;
+    }
+  }
+
+  .fade-logo-enter-active {
+    transition: all .4s ease-in-out;
+  }
+
+  .fade-logo-enter, .fade-logo-leave-to {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+
+
+</style>

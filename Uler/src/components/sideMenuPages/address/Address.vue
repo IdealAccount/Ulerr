@@ -56,6 +56,9 @@
       DropdownHint,
       SelectList
     },
+    watch: {
+
+    },
     data() {
       return {
         validation: {
@@ -64,7 +67,6 @@
           house: null,
           region: null,
         },
-
         isOpen: false,
         isShow: false,
 
@@ -149,6 +151,7 @@
           } else this.validation[type] = true;
         } else this.validation[type] = null;
         this.getRegionAsync();
+        this.dropdownHintSet.clear();
       },
       showAddress() {
         this.isShow = !this.isShow;
