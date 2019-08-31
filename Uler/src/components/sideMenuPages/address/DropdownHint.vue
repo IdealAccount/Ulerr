@@ -8,7 +8,7 @@
             @click="getSelectItem(item)"
             tabindex="0"
         >
-          {{item.fullname || item.housenum }}
+          {{item.item_fullname || item.housenum}}
         </li>
       </ul>
     </div>

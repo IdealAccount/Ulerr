@@ -1,6 +1,6 @@
 <template>
   <div class="popup">
-    <span class="popup-close" @click="$parent.$data.isShow = false"></span>
+    <span class="popup-close" @click="this.$parent.$data.isShow = false"></span>
     <component :is="currentPopup"
                :key="currentPopup"
                :cardId="typeOfPopup.id ? typeOfPopup.id : null"
@@ -25,29 +25,16 @@
         if (this.typeOfPopup.type === 'remove') return 'PopupRemove';
         if (this.typeOfPopup.type === 'adding') return 'PopupAdding';
         if (this.typeOfPopup.type === 'edit') return 'PopupEdit';
-        // switch (this.typeOfPopup.type) {
-        //   case 'remove':
-        //     return 'PopupRemove'
-        //     break;
-        //
-        //   case 'adding':
-        //     return 'PopupAdding'
-        //     break;
-        //
-        //   case 'edit':
-        //     return 'PopupEdit'
-        //     break;
-        // }
       }
     },
   }
 </script>
 <style lang="scss">
   .popup {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%,-50%);
     width: 400px;
     z-index: 100;
     background: #fff;

@@ -62,10 +62,13 @@ export const store = new Vuex.Store({
       street: {
         parentId: '',
         id: '',
-        val: ''
+        val: '',
+        fullName: '',
       },
       house: {
+        id: '',
         val: '',
+        housenum: '',
       },
       building: {
         val: '',
@@ -109,21 +112,17 @@ export const store = new Vuex.Store({
         state.formInputModel[type].housenum = item.housenum;
         state.formInputModel[type].postalCode = item.postalcode;
       }
-      else {
-        if (type === 'city') {
-          state.formInputModel[type].id = item.aoguid;
-          state.formInputModel[type].parentId = item.parentguid
-        } else if (type === 'street') {
-          state.formInputModel[type].id = item.aoguid;
-          state.formInputModel[type].parentId = item.parentguid
-        }
+      else if (type === 'city' || type === 'street') {
+        state.formInputModel[type].id = item.aoguid;
+        state.formInputModel[type].parentId = item.parentguid
+        state.formInputModel[type].fullName = item.fullname;
       }
     },
     GET_REGION(state, data) {
       let inputModel = state.formInputModel;
-        if (!inputModel.city.val.length || (+inputModel.city.parentId === +inputModel.region.id)) return;
-          state.formInputModel.region.val = data.fullname || data.item_fullname;
-      },
+      if (!inputModel.city.val.length || (+inputModel.city.parentId === +inputModel.region.id)) return;
+      state.formInputModel.region.val = data.fullname || data.item_fullname;
+    },
   },
   actions: {
     removeCard({commit, state}, id) {
@@ -139,13 +138,12 @@ export const store = new Vuex.Store({
     changeCardName({commit, state}, payload) {
       commit('CHANGE_NAME', payload);
     },
-    setSelectInput({commit, state}, {item, type})  {
-       commit('SET_SELECT_INPUT', {item, type})
+    setSelectInput({commit, state}, {item, type}) {
+      commit('SET_SELECT_INPUT', {item, type})
     },
     async getRegionAsync({commit, state}) {
       let res = await axios(`https://fias1.euler.solutions:443/api/v1/address?aoguid=${state.formInputModel.city.parentId}`);
       let {data} = res.data;
-      console.log(data);
       await commit('GET_REGION', await data);
     },
   },

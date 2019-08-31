@@ -13,6 +13,7 @@
                  v-model="formInputModel[input.type].val"
                  @input="getDropdownHint(formInputModel[input.type].val, input.type)"
                  @blur="validateForm(input.type)"
+                 @focus="dropdownHintSet = []"
                  :key="input.type"
                  :required="input.required"
           >
@@ -22,17 +23,15 @@
                  validation[input.type] === false ? 'not-valid' :
                  validation[input.type] === null ? '' : '']"
                  :data-require="input.dataAttr"
-                 :data-id="i"
                  @click="type = type === input.type ? 'null' : input.type"
           >
           </label>
           <dropdown-hint :dropdownHint="dropdownHint"
+                         :selectItem="selectItem"
+                         v-show="type === input.type"
+                         v-if="input.dropdown"
                          :key="i"
                          ref="dropdown"
-                         :data-id="i"
-                         :selectItem="selectItem"
-                         v-show="type===input.type"
-                         v-if="input.dropdown"
           ></dropdown-hint>
         </div> <!-- Контейнер поля в вода END -->
       </form>
@@ -56,9 +55,7 @@
       DropdownHint,
       SelectList
     },
-    watch: {
-
-    },
+    watch: {},
     data() {
       return {
         validation: {
@@ -99,7 +96,7 @@
         return disable;
       },
       dropdownHint() {
-        return Array.from(this.dropdownHintSet)
+        return [...this.dropdownHintSet]
       }
     },
     methods: {
@@ -116,11 +113,11 @@
 
         let res = await axios.get('https://fias1.euler.solutions:443' + this.api[type]);
         let {data} = res.data;
+
         this.dropdownHintSet = new Set();
 
         data.filter(item => {
           item.type = type;
-
           if (item[name].search(inputStr) !== -1) {
             this.setSelectInput({item, type});
             this.dropdownHintSet.add(item);
@@ -131,35 +128,38 @@
       selectItem(item) {
         this.$emit('selectItem', item);
         let type = item.type;
-        let propName = type === 'house' ? 'housenum' : 'item_fullname';
+        let propName = (type === 'house') ? 'housenum' : 'item_fullname';
+
         this.setSelectInput({item, type});
         this.getRegionAsync();
         this.formInputModel[type].val = item[propName];
       },
       validateForm(type) {
+        if (type === 'apartment' || type === 'building') return;
+
         if (type === 'city' || type === 'street') {
           if (!this.formInputModel[type].id || !this.formInputModel[type].val) {
-            this.validation[type] = false;
-          } else this.validation[type] = true;
-        } else if (type === 'region') {
-          if (!this.formInputModel[type].val) this.validation[type] = false;
-          else this.validation[type] = true;
+            return this.validation[type] = false;
+          }
         }
-        else if (type === 'house') {
-          if (!this.formInputModel[type].housenum || !this.formInputModel[type].postalCode) {
-            this.validation[type] = false;
-          } else this.validation[type] = true;
-        } else this.validation[type] = null;
+        else if ((type === 'region') && !this.formInputModel[type].val) {
+          return this.validation[type] = false;
+        }
+        else if ((type === 'house') && !this.formInputModel[type].housenum) {
+          return this.validation[type] = false;
+        }
+        this.validation[type] = true;
+
         this.getRegionAsync();
-        this.dropdownHintSet.clear();
+        // this.dropdownHintSet = [];
       },
       showAddress() {
         this.isShow = !this.isShow;
         this.address = [
           {str: this.formInputModel.house.postalCode + ', '},
-          {str: 'г. ' + this.formInputModel.city.val + ', '},
-          {str: 'пр-кт ' + this.formInputModel.street.val + ', '},
-          {str: 'д. ' + this.formInputModel.building.val + ', '},
+          {str: this.formInputModel.street.fullName + ', '},
+          {str: 'д. ' + this.formInputModel.house.val + ', '},
+          {str: 'к. ' + this.formInputModel.building.val + ', '},
           {str: 'кв.' + this.formInputModel.apartment.val},
         ]
       },

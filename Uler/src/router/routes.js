@@ -31,4 +31,8 @@ export const routes = [
     name: 'Акции и Бонусы',
     component: Promotions
   },
-]
+  {
+    path: '*',
+    component: Instruments
+  }
+];

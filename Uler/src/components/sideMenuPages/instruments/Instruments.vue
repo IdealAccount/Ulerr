@@ -62,7 +62,7 @@
 </script>
 <style lang="scss">
   .instruments-container {
-    position: relative;
+    /*position: relative;*/
     padding: 0 60px;
   }
   .btn {
